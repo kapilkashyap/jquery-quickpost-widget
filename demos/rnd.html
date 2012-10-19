@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Quick Post Widget - RnD</title>
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/ui/1.8.0/jquery-ui.min.js"></script>
+
+		<script type="text/javascript" src="assets/filterJSON.plugin.js"></script>
+		<script type="text/javascript" src="../src/paginated.dropdown.widget.js"></script>
+		<script type="text/javascript" src="../src/quickpost.widget.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="assets/style.css" />
+		<link rel="stylesheet" type="text/css" href="../style/quickpost.widget.css" />
+		<style type="text/css">
+			.vertical-align-top {
+				vertical-align: top;
+			}
+			.x-message {
+				background-color: #D6DEEC;
+				padding: 2px;
+				margin: 25px 0;
+			}
+			.x-comment {
+				background-color: #EEEEEE;
+				padding: 2px;
+				margin: 1px 0;
+			}
+			.comment-container {
+				margin: 0 0 2px 0;
+			}
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div>
+			<div class="marginT10px vertical-align-top" style="margin: 0px auto; border: 2px solid #FFFFFF; padding: 5px; width: 404px;">
+				<div id="x-post-demo" class="x-quickpost width400px height30px" contentEditable="true" dir="LTR"></div>
+				<div class="btn-container input-row" style="display: none;">
+					<button id="post" class="floatRight">Post</button>
+				</div><br/>
+				<div id="msg-container"></div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		$( document ).ready(function() {
+			$( "#x-post-demo" ).quickpost({
+				url: "assets/cricketers.json",
+				valueProperty: "name",
+				itemTemplate: "<div title=\"{@:email}\"><div>{@:name}</div></div>",
+				filterJSON: {startsWith: true}
+			}).bind( "quickpostitemselected", function( event, data ) {
+				if(window.console) {
+					console.log("callback - quickpostitemselected");
+					console.log(event);
+					console.log(data);
+				}
+		    }).bind( "keyup", function( event ) {
+		    	if($( this ).text() != "") {
+		    		$( this ).parent().siblings( ".btn-container" ).show();
+		    	}
+		    	else {
+		    		$( this ).parent().siblings( ".btn-container" ).hide();
+		    	}
+		    });
+		});
+
+		$( "#post" ).click(function( event ) {
+			var $qpw = $( this ).parent().siblings( ".quickpost-wrapper" ),
+			 	$post = $( "<div></div>", {"class": "x-message"}).html( $qpw.find( "input[type='hidden']" ).val() ),
+			 	$commentContainer = $( "<div></div>", {"class": "comment-container"} ),
+			 	$commentBox = $( "<div></div>", {
+					 				"class": "x-quickpost",
+					 				"contentEditable": "true",
+					 				"dir": "LTR" 
+					 			}).width( 400 ).height( 20 ),
+				$btnContainer = $( "<div></div>", {
+									"class": "btn-container input-row hidden",
+									"html": $( "<button></button>", {
+										"class": "floatRight",
+										"html": "Comment"
+									 }).click(function( event ) {
+										var $cqpw = $( this ).parent().siblings( ".quickpost-wrapper" );
+										$( this ).parent().siblings( ".comment-container" ).append( $( "<div></div>", {"class": "x-comment","html": $cqpw.find( "input[type='hidden']" ).val()}) );
+										$cqpw.find( ".quickpost" ).html( "" ).keydown().keyup();
+									})
+								});
+
+			$post.append( $commentContainer ).append( $commentBox ).append( $btnContainer );
+
+			$commentBox.quickpost({
+				url: "assets/cricketers.json",
+				valueProperty: "name",
+				itemTemplate: "<div title=\"{@:email}\"><div>{@:name}</div></div>",
+				filterJSON: {startsWith: true},
+				increaseHeightAfter: 50,
+				deltaHeight: 10
+			}).bind( "quickpostitemselected", function( event, data ) {
+				if(window.console) {
+					console.log("callback - quickpostitemselected");
+					console.log(event);
+					console.log(data);
+				}
+		    }).bind( "keyup", function( event ) {
+		    	if($( this ).text() != "") {
+		    		$( this ).parent().siblings( ".btn-container" ).show();
+		    	}
+		    	else {
+		    		$( this ).parent().siblings( ".btn-container" ).hide();
+		    	}
+		    });
+
+			$( "#msg-container" ).prepend( $post );
+			$qpw.find( ".quickpost" ).html( "" ).keydown().keyup();
+		});
+	</script>
+</html>
