@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Quick Post Widget - RnD</title>
+		<title>Quick Post Widget - Implementation</title>
 		<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>
 		<script type="text/javascript" src="http://code.jquery.com/ui/1.8.0/jquery-ui.min.js"></script>
 
@@ -12,33 +12,59 @@
 		<link rel="stylesheet" type="text/css" href="assets/style.css" />
 		<link rel="stylesheet" type="text/css" href="../style/quickpost.widget.css" />
 		<style type="text/css">
+			body {
+				background-color: #FFFFFF;
+				color: #000;
+			}
 			.vertical-align-top {
 				vertical-align: top;
 			}
-			.x-message {
-				background-color: #D6DEEC;
-				padding: 2px;
+			.x-message-container {
 				margin: 25px 0;
 			}
+			.x-message {
+				background-color: #9FBAE9;
+				padding: 3px 0;
+				margin: 0 0 1px 0;
+			}
 			.x-comment {
-				background-color: #EEEEEE;
-				padding: 2px;
-				margin: 1px 0;
+				background-color: #E0ECFF;
+				padding: 2px 2px 2px 5px;
+				margin: 0 1px 1px 1px;
 			}
 			.comment-container {
-				margin: 0 0 2px 0;
+				margin: 0;
 			}
 			.hidden {
 				display: none;
+			}
+			.quick-post-label {
+				background-color: #5378B9;
+				color: white;
+				padding: 3px 2px;
+				margin: 0 0 1px 0;
+			}
+			.input-row button {
+				background: #9FBAE9;
+				color: white;
+				border: 1px solid #728FC2;
+				cursor: pointer;
+			}
+			.input-row button:hover {
+				background: #728FC2;
+				color: white;
+				border: 1px solid #728FC2;
+				cursor: pointer;
 			}
 		</style>
 	</head>
 
 	<body>
 		<div>
-			<div class="marginT10px vertical-align-top" style="margin: 0px auto; border: 2px solid #FFFFFF; padding: 5px; width: 404px;">
+			<div class="marginT10px vertical-align-top" style="margin: 0px auto; padding: 5px; width: 402px;">
+				<div class="quick-post-label">Quick Post...</div>
 				<div id="x-post-demo" class="x-quickpost width400px height30px" contentEditable="true" dir="LTR"></div>
-				<div class="btn-container input-row" style="display: none;">
+				<div class="btn-container input-row" style="display: none; padding: 0 !important;">
 					<button id="post" class="floatRight">Post</button>
 				</div><br/>
 				<div id="msg-container"></div>
@@ -71,7 +97,7 @@
 
 		$( "#post" ).click(function( event ) {
 			var $qpw = $( this ).parent().siblings( ".quickpost-wrapper" ),
-			 	$post = $( "<div></div>", {"class": "x-message"}).html( $qpw.find( "input[type='hidden']" ).val() ),
+			 	$post = $( "<div></div>", {"class": "x-message-container", "html": "<div class='x-message'>" + $qpw.find( "input[type='hidden']" ).val() + "</div>"}),
 			 	$commentContainer = $( "<div></div>", {"class": "comment-container"} ),
 			 	$commentBox = $( "<div></div>", {
 					 				"class": "x-quickpost",
@@ -80,12 +106,14 @@
 					 			}).width( 400 ).height( 20 ),
 				$btnContainer = $( "<div></div>", {
 									"class": "btn-container input-row hidden",
+									"style": "padding: 0 !important;",
 									"html": $( "<button></button>", {
 										"class": "floatRight",
 										"html": "Comment"
 									 }).click(function( event ) {
-										var $cqpw = $( this ).parent().siblings( ".quickpost-wrapper" );
-										$( this ).parent().siblings( ".comment-container" ).append( $( "<div></div>", {"class": "x-comment","html": $cqpw.find( "input[type='hidden']" ).val()}) );
+										var $cqpw = $( this ).parent().siblings( ".quickpost-wrapper" ),
+											$value = $cqpw.find( "input[type='hidden']" ).val();
+										$( this ).parent().siblings( ".comment-container" ).append( $( "<div></div>", {"class": "x-comment","html": $value}) );
 										$cqpw.find( ".quickpost" ).html( "" ).keydown().keyup();
 									})
 								});

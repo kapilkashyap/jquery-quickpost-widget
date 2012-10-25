@@ -1,6 +1,6 @@
 /* input element wrapper
 ------------------------------------------------ */
-.quickpost-wrapper { border: 1px solid #808080; background-color: #FFFFFF; font-family: verdana; font-size: 12px; cursor: pointer; }
+.quickpost-wrapper { border: 1px solid #808080; background-color: #FFFFFF; font-family: verdana; font-size: 12px; cursor: default; }
 /* input element mark-up
 ------------------------------------------------ */
 .quickpost-wrapper .quickpost { border-width: 0px !important; outline: none; overflow: hidden; margin: 2px; cursor: text; word-wrap: break-word; }
