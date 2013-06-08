@@ -1,79 +1,514 @@
 <!DOCTYPE html>
 <html>
+	<head>
+    	<meta charset='utf-8' />
+    	<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    	<meta name="description" content="jquery-quickpost-widget : A Facebook: Update status or Google+: What's new... like widget which allows you to select profile(s) or page(s) from suggested drop down list, highlights them while you continue entering content and provides a direct link to the selected profile(s) or page(s) after posting the content." />
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Jquery-quickpost-widget : A Facebook: Update status or Google+: What's new... like widget which allows you to select profile(s) or page(s) from suggested drop down list, highlights them while you continue entering content and provides a direct link to the selected profile(s) or page(s) after posting the content." />
+    	<title>jquery-quickpost-widget</title>
+    	
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+		<script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+		<script type="text/javascript">
+		/*
+		 * jQuery Filter JSON Plugin
+		 * Copyright (c) 2012 Kapil Kashyap
+		 *
+		 * Depends:
+		 *   - jQuery 1.6+
+		 *
+		 * Dual licensed under the MIT and GPL licenses:
+		 *   - http://www.opensource.org/licenses/mit-license.php
+		 *   - http://www.gnu.org/licenses/gpl.html
+		 */
+		(function(e){e.extend(e.fn,{filterJSON:function(t,n){var r={property:null,value:"",wrapper:false,checkContains:false,startsWith:false,matchCase:false,avoidDuplicates:false},i=function(t,n){var r=null;if(e.isEmptyObject(n.property)||!n.property[0]){r="config.property is required to filter the JSON object."}if(!e.isEmptyObject(r)){if(window.console){console.error?console.error(r):console.log(r)}else{alert(r)}return}if(t&&typeof t=="object"){e.each(t,function(r,o){if(e.inArray(r,n.property)!=-1){var u=function(t,r){var i=n.wrapper?t:r;if(n.avoidDuplicates){if(e.inArray(i,s.filteredJSON)==-1){s.filteredJSON.push(i)}}else{s.filteredJSON.push(i)}};if(n.value){var a=e.isArray(n.value)?n.value:[n.value],f={},l=Object.prototype.toString.call(o),c=function(r,s,o){if(r==="[object String]"){var a=s.toLowerCase(),l=o.toLowerCase();if(!n.matchCase){if(a==l||!n.startsWith&&n.checkContains&&a.indexOf(l)!=-1||n.startsWith&&a.indexOf(l)==0){u(t,s)}}else{if(s==o||!n.startsWith&&n.checkContains&&s.indexOf(o)!=-1||n.startsWith&&s.indexOf(o)==0){u(t,s)}}}else if(r==="[object Number]"){if(s===parseInt(o)||s===parseFloat(o)){u(t,s)}}else if(r==="[object Boolean]"){var h=false;if(Object.prototype.toString.call(o)==="[object String]"){if(o.toLowerCase()=="true"){h=true}}if(s===h){u(t,s)}}else if(r==="[object Array]"){if(s.length>0){for(k in s){c(Object.prototype.toString.call(s[k]),s[k],o)}}}else if(r==="[object Object]"){e.extend(f,n,{value:o});i(s,f)}};for(k in a){c(l,o,a[k])}}else{u(t,o)}}i(o,n)})}return s},s={filteredJSON:[]},o=null,u=null,a=null;e.extend(r,n);a=r.property;if(Object.prototype.toString.call(a)==="[object String]"){a=a.replace(/\s/g,"");r.property=a.split(",")}a=null;if(r.wrapper&&r.property&&r.property.length>1&&n.avoidDuplicates==undefined){r.avoidDuplicates=true}o=i(t,r);if(o&&o.filteredJSON){u=o.filteredJSON.length>0?o.filteredJSON:o.filteredJSON[0]}return e(u)}})})(jQuery);
+		/*
+		 * jQuery Paginated Drop Down UI Widget 1.0
+		 * Copyright (c) 2012 Kapil Kashyap
+		 *
+		 * Depends:
+		 *   - jQuery 1.6+
+		 *   - jQuery UI 1.8 widget factory
+		 *   - jQuery Filter Json plugin // optional
+		 *
+		 * Dual licensed under the MIT and GPL licenses:
+		 *   - http://www.opensource.org/licenses/mit-license.php
+		 *   - http://www.gnu.org/licenses/gpl.html
+		 */
+		(function(a){a.widget("kk.paginateddropdown",{options:{url:null,itemTemplate:null,valueProperty:null,itemsPerPage:10,dropdownWidth:null,elementType:"text",persistState:false,closeBtnRequired:true,footerRequired:true,keyNavigation:{up_down:true,next_prev:true},customEventPrefix:null,filterJSON:null,cache:false},_create:function(){var b=null,c=null,d=0;this._setWidgetProperties();b=a("<div></div>").addClass(this.wp.widgetBaseClass+this.wp.hyphen+this.options.elementType+this.wp.hyphen+this.wp.wrapperLabel);this.element.wrap(b.width(this.element.width()+(a.browser.msie?2:0)));this._setWidgetState();this.element.addClass(this.wp.widgetBaseClass);if(this.options.dropdownWidth){d=parseInt(this.options.dropdownWidth,10);this.options.dropdownWidth=d?d:0}c=parseInt(this.options.itemsPerPage,10);if(!c||c<=0){this.options.itemsPerPage=10}this._bindEvents();this._constructPaginationFooterTemplate()},_init:function(b){b=b||this.options;a.ajaxSetup({cache:b.cache});this._checkDependencies()},_checkDependencies:function(){if(this.options.filterJSON&&!a.fn.filterJSON){var b="jQuery filter json plugin is required.";if(window.console){console.error(b,this.element.context);return}alert(b)}},_setWidgetProperties:function(){if(this.options.customEventPrefix){this.widgetEventPrefix=this.options.customEventPrefix}this.wp={};this.wp.widgetBaseClass="paginateddropdown";this.wp.selectedItemClass="selected-item";this.wp.space=" ";this.wp.hyphen="-";this.wp.ofLabel="of";this.wp.wrapperLabel="wrapper";this.wp.containerLabel="container";this.wp.itemLabel="item";this.wp.footerLabel="footer";this.wp.footerContentLabel="footer-content";this.wp.footerInfoLabel="footer-info";this.wp.footerLeftNavLabel="footer-left-nav";this.wp.footerRightNavLabel="footer-right-nav";this.wp.closeBtnLabel="close-button";this.wp.itemSelectedEvent="itemselected"},_bindEvents:function(){var b=this,c=b.element;if(b.options.elementType&&b.options.elementType=="text"){c.keydown(function(a){b._keyNavigations(a)});c.keypress(function(d){if(d.keyCode==13){d.preventDefault();if(a(c.parent().find("."+b.wp.selectedItemClass)).length>0){b._itemSelection(d)}return}});c.keyup(function(d){if(c.val()==""||d.keyCode==27){if(c.val()==""||!b.options.persistState){b._resetWidgetState()}b._cleanup();return}b._fetchData(a.trim(c.val()))})}else if(b.options.elementType&&b.options.elementType=="link"){c.click(function(a){b._fetchData()});c.keyup(function(a){if(a.keyCode==27){if(!b.options.persistState){b._resetWidgetState()}b._cleanup()}})}c.blur(function(a){setTimeout(function(){if(c.is(":focus")){return false}if(!b.options.persistState){b._resetWidgetState()}b._cleanup()},200)})},_updateContent:function(b){var c=this.element;if(this.options.valueProperty){if(a.type(b)=="object"){c.val(b[this.options.valueProperty]).focus()}else{c.val(b).focus()}}else{c.val(a(c.parent().find("."+this.wp.selectedItemClass)).text()).focus()}},_keyNavigations:function(b){var c=this,d=c.element,e=a(d.parent().find("."+c.wp.selectedItemClass)),f=null,g=null;if(c._getWidgetState().html){if(c.options.keyNavigation.next_prev&&b.keyCode==37){c._prevPage(b,c);return}else if(c.options.keyNavigation.next_prev&&b.keyCode==39){c._nextPage(b,c);return}else if(c.options.keyNavigation.up_down&&b.keyCode==38){b.preventDefault();g=c._getWidgetState().endIndex-c._getWidgetState().startIndex+1;f=e.prev().index();if(f!=-1){g=f+1}c._highlightItem(g);return}else if(c.options.keyNavigation.up_down&&b.keyCode==40){b.preventDefault();g=1;f=e.next().hasClass(c.wp.widgetBaseClass+c.wp.hyphen+c.wp.footerLabel)?-1:e.next().index();if(f!=-1){g=f+1}c._highlightItem(g);return}}},_itemSelection:function(a){this._updateContent(this._getSelectedItemObject());this._cleanup();this._fireEvent(this.wp.itemSelectedEvent,a)},_nextPage:function(a,b){var c=b._getWidgetState();b.element.focus();if(c.page<c.maximumNumberOfPages){c.page++;b._paginate();b.element.parent().find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.containerLabel).html(c.html);b._updateFooterInfo();b._bindDropdownComponentEvents();b._highlightItem(1);b._markAllItems()}},_prevPage:function(a,b){var c=b._getWidgetState();b.element.focus();if(c.page>1){c.page--;b._paginate();b.element.parent().find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.containerLabel).html(c.html);b._updateFooterInfo();b._bindDropdownComponentEvents();b._highlightItem(1);b._markAllItems()}},_fetchData:function(b){var c=this,d=c._getWidgetState();if(c.options.url){d.query=b;a.getJSON(c.options.url,{q:b},function(e){var f=null;if(c.options.filterJSON&&a.fn.filterJSON){f=a.fn.filterJSON(e,a.extend({property:c.options.valueProperty,value:b,checkContains:true,wrapper:true},c.options.filterJSON))}d.fetchedData=d.data=f?f:e;c._constructDropDown()})}},_constructDropDown:function(){var a=this._getWidgetState().data;this._cleanup();if(a==null||a.length==0){this._resetWidgetState();return}if(this.options.itemTemplate){this._getWidgetState().data=this._constructHtmlUsingTemplate()}this._paginate();this._createDropdownComponents();this._updateFooterInfo();this._bindDropdownComponentEvents();this._highlightItem(this._getWidgetState().highlightedIndex);this._markAllItems()},_constructHtmlUsingTemplate:function(){var b=this,c=b._getWidgetState().data,d=[];if(!c){var e="data is required.";if(window.console){console.error?console.error(e):console.log(e);return}alert(e);return}a(c).each(function(c,e){var f=a("<div></div>").html(b.options.itemTemplate).html();if(a.type(e)=="object"){a.each(e,function(a,c){var d="{@:"+a+"}",e=new RegExp(d,"g");if(b.options.itemTemplate.indexOf(d)!=-1){f=f.replace(e,c)}})}else{var g="{@:"+b.options.valueProperty+"}",h=new RegExp(g,"g");if(b.options.itemTemplate.indexOf(g)!=-1){f=f.replace(h,e)}}d.push(f)});return d},_paginate:function(){var a=this,b=a._getWidgetState(),c=a.options.itemsPerPage,d=null,e=[];if(b.data&&b.data.length){if(b.data.length!=b.totalResults){b.page=1;b.highlightedIndex=1}b.totalResults=b.data.length}b.maximumNumberOfPages=Math.floor(b.totalResults/c);if(b.totalResults%c>0){b.maximumNumberOfPages++}if(b.totalResults>0){d=c*b.page;b.startIndex=d-c;for(var f=d-c;f<d;f++){if(f==b.totalResults){break}e.push(b.data[f])}b.endIndex=--f}if(b.maximumNumberOfPages>1){e.push(b.paginationFooter)}b.html=e.join("")},_createDropdownComponents:function(){var b=this,c=b.element.parent().position(),d=a("<div></div>",{"class":b.wp.widgetBaseClass+b.wp.hyphen+b.wp.closeBtnLabel,html:'<div class="x-close-btn-icon"/>',click:function(a){a.preventDefault();b._cleanup()}}),e=a("<div></div>",{"class":b.wp.widgetBaseClass+b.wp.hyphen+b.wp.containerLabel,width:b.options.dropdownWidth>0?b.options.dropdownWidth:b.element.parent().width(),html:b._getWidgetState().html});b.element.parent().append(e);e.position({my:"top",at:"bottom",of:b.element.parent(),offset:"0 -1"}).css("left",c.left+"px");if(b.options.closeBtnRequired){b.element.parent().append(d);d.position({my:"left top",at:"right top",of:e,offset:"-5 -5"})}},_updateFooterInfo:function(){if(this.options.footerRequired){var a=this._getWidgetState(),b=null;if(a.maximumNumberOfPages>1){b=a.startIndex+1+this.wp.space+this.wp.hyphen+this.wp.space+(a.endIndex+1)+this.wp.space+this.wp.ofLabel+this.wp.space+a.totalResults;this.element.parent().find("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerInfoLabel).html(b)}}},_bindDropdownComponentEvents:function(){var b=this,c=b.element.parent();if(b.options.footerRequired){c.find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.footerLabel).bind("click dblclick",function(a){b.element.focus()});c.find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.footerRightNavLabel).bind("click dblclick",function(a){b._nextPage(a,b)});c.find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.footerLeftNavLabel).bind("click dblclick",function(a){b._prevPage(a,b)})}c.find("."+b.wp.widgetBaseClass+b.wp.hyphen+b.wp.containerLabel+" > div").each(function(c,d){if(!a(d).hasClass(b.wp.widgetBaseClass+b.wp.hyphen+b.wp.footerLabel)){a(d).click(function(a){b._highlightItem(c+1);b._itemSelection(a)})}})},_constructPaginationFooterTemplate:function(){if(this.options.footerRequired){var a=this._getWidgetState();a.paginationFooter='<div class="'+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerLabel+'">';a.paginationFooter+='<div class="'+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerContentLabel+'">';a.paginationFooter+='<span class="'+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerLeftNavLabel+'"><</span>';a.paginationFooter+='<span class="'+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerInfoLabel+'"></span>';a.paginationFooter+='<span class="'+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.footerRightNavLabel+'">></span>';a.paginationFooter+="</div>";a.paginationFooter+="</div>"}},_highlightItem:function(a){this._removeItemHighlight();this._getWidgetState().highlightedIndex=a;this.element.parent().find("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.containerLabel+" > div:nth-child( "+a+" )").addClass(this.wp.selectedItemClass)},_markAllItems:function(){var b=this,c=this.element.siblings("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.containerLabel).children();c.each(function(c,d){if(!a(d).hasClass(b.wp.widgetBaseClass+b.wp.hyphen+b.wp.footerLabel)){a(d).addClass(b.wp.widgetBaseClass+b.wp.hyphen+b.wp.itemLabel)}})},_removeItemHighlight:function(a){if(!a){a=this.element.parent().find("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.containerLabel+" > div."+this.wp.selectedItemClass)}a.removeClass(this.wp.selectedItemClass)},_cleanup:function(){if(this.options.closeBtnRequired){this.element.parent().find("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.closeBtnLabel).remove()}this.element.parent().find("."+this.wp.widgetBaseClass+this.wp.hyphen+this.wp.containerLabel).remove()},_setWidgetState:function(){var a={page:1,html:null,startIndex:1,endIndex:1,totalResults:0,paginationFooter:"",highlightedIndex:1,maximumNumberOfPages:0,data:null,fetchedData:null};this.element.data({widgetState:a});this._constructPaginationFooterTemplate()},_getWidgetState:function(){return this.element.data("widgetState")},_resetWidgetState:function(){this._setWidgetState()},_fireEvent:function(a,b,c){if(a===this.wp.itemSelectedEvent&&!c){c=this._getSelectedItemObject()}this._resetWidgetState();this._trigger(a,b,c)},_getSelectedItemObject:function(){var a={},b=this._getWidgetState(),c=b.fetchedData;if(c&&c.length>0){a=c[b.startIndex+b.highlightedIndex-1]}return a},_setOption:function(b,c){if(this._super){this._super(b,c);return}a.Widget.prototype._setOption.apply(this,arguments)},_setOptions:function(b){if(this._super){this._super(b);return}a.Widget.prototype._setOptions.apply(this,arguments)},destroy:function(){this._cleanup();this.element.removeClass(this.wp.widgetBaseClass).unwrap();this.element.unbind();a.Widget.prototype.destroy.call(this)}})})(jQuery);
+		/*
+		 * jQuery Quick Post UI Widget 1.0
+		 * Copyright (c) 2012 Kapil Kashyap
+		 *
+		 * Depends:
+		 *   - jQuery 1.6+
+		 *   - jQuery UI 1.8 widget factory
+		 *   - jQuery paginateddropdown widget
+		 *   - jQuery Filter Json plugin // optional
+		 *
+		 * Dual licensed under the MIT and GPL licenses:
+		 *   - http://www.opensource.org/licenses/mit-license.php
+		 *   - http://www.gnu.org/licenses/gpl.html
+		 */
+		(function(e){e.widget("kk.quickpost",e.kk.paginateddropdown,{options:{triggerOn:"@",identifierProperty:"id",autoHeight:true,increaseHeightAfter:75,deltaHeight:20},_create:function(){var t=null,n=null,r=null,i=0;this._setWidgetProperties();t=e("<div></div>").addClass(this.wp.widgetBaseClass+this.wp.hyphen+this.wp.wrapperLabel);this.element.wrap(t.width(this.element.width()));this._setWidgetState();this.element.addClass(this.wp.widgetBaseClass);if(this.options.dropdownWidth){i=parseInt(this.options.dropdownWidth,10);this.options.dropdownWidth=i?i:0}r=parseInt(this.options.itemsPerPage,10);if(!r||r<=0){this.options.itemsPerPage=10}n=e("<input></input>",{type:"hidden",value:"",name:"x_"+this.wp.widgetBaseClass+"_hidden_input","class":"x-"+this.wp.widgetBaseClass+"-hidden-input"});this.element.parent().append(n);this._bindEvents();this._constructPaginationFooterTemplate()},_setWidgetProperties:function(){if(this.options.customEventPrefix){this.widgetEventPrefix=this.options.customEventPrefix}this.wp={};this.wp.widgetBaseClass="quickpost";this.wp.selectedItemClass="selected-item";this.wp.space=" ";this.wp.hyphen="-";this.wp.ofLabel="of";this.wp.wrapperLabel="wrapper";this.wp.containerLabel="container";this.wp.itemLabel="item";this.wp.footerLabel="footer";this.wp.footerContentLabel="footer-content";this.wp.footerInfoLabel="footer-info";this.wp.footerLeftNavLabel="footer-left-nav";this.wp.footerRightNavLabel="footer-right-nav";this.wp.closeBtnLabel="close-button";this.wp.itemSelectedEvent="itemselected";this.wp.fireAjaxRegEx=new RegExp("\\s"+this.options.triggerOn+"\\w+");this.wp.fireAjaxRegEx2=new RegExp(this.options.triggerOn+"\\w+");this.wp.contentEditableRegEx=new RegExp('\\s?contenteditable=("false"|false)\\s?',"ig");this.wp.breakLineRegEx=new RegExp("<br>","ig");this.wp.openingTagRegEx=new RegExp("\\<button\\s?|\\<b\\s?","ig");this.wp.closingTagRegEx=new RegExp("</button>|</b>","ig");this.wp.pidRegEx=new RegExp('s?pid="',"ig");this.wp.nbspRegEx=new RegExp(" ","g");this.wp.delimeterRegEx=new RegExp('">',"g");this.wp.typeRegEx=new RegExp("\\s?type=submit\\s?","ig");this.wp.spanRegEx=new RegExp('<span contenteditable=("true"|true)>|</span>',"ig");this.wp.mailToPrefixRegEx=new RegExp('<a href="mailto:\\w+\\.?(\\w+)?\\@\\w+">',"ig");this.wp.mailToSuffixRegEx=new RegExp("</a>","ig");this.wp.emptyString="";this.wp.enclosurePrefix="@[";this.wp.enclosureDelimeter=":";this.wp.enclosureSuffix="]";this.wp.elOriginalHeight=this.element.height()},_bindEvents:function(){var t=this,n=t.element,r=null;n.keydown(function(i){t._keyNavigations(i);if(e.browser.mozilla){if(i.keyCode==8||i.keyCode==46){r=document.getSelection();if(r&&r.toString()!=""){if(i.keyCode==8){i.preventDefault()}r.deleteFromDocument();t._updateHiddenInput();n.focus()}}}if(t.options.autoHeight){t._setElHeight(n.text().length)}});n.keypress(function(r){if(r.keyCode==13){r.preventDefault();if(e(n.parent().find("."+t.wp.selectedItemClass)).length>0){t._itemSelection(r)}return}});n.keyup(function(e){var r=null,i=n.text();if(i==""||e.keyCode==27){if(i==""||!t.options.persistState){if(i==""){n.siblings(".x-"+t.wp.widgetBaseClass+"-hidden-input").val("");n.html("")}t._resetWidgetState()}t._cleanup();return}t._updateHiddenInput();if(i.match(t.wp.fireAjaxRegEx)||i.search(t.wp.fireAjaxRegEx2)!=-1){var s=0,o=null,u="",a=-1,f="",l=function(e,t){if(!t){return e}if(t.innerText||t.innerHTML){e=e+(t.innerText||t.innerHTML).length}else if(t.data){e=e+t.data.length}return l(e,t.previousSibling)};if(window.getSelection){r=window.getSelection().getRangeAt(0);s=l(r.startOffset,r.endContainer.previousSibling)}else if(document.selection){r=document.selection.createRange();o=document.body.createTextRange();o.moveToElementText(this);o.setEndPoint("EndToEnd",r);s=o.text.length}u=i.substring(0,s),a=u.lastIndexOf(t.options.triggerOn),f=a!=-1?u.substring(a+1):"";if(f!=""){t._fetchData(f)}else{t._cleanup()}}else{t._cleanup()}});n.blur(function(e){setTimeout(function(){if(n.is(":focus")){return false}t._resetWidgetState();t._cleanup()},200)});n.click(function(t){if(e.browser.msie){try{document.execCommand("AutoUrlDetect",false,false)}catch(n){}}})},_setElHeight:function(e){var t=null,n=null;if(e>1){n=Math.floor(e/this.options.increaseHeightAfter);t=this.wp.elOriginalHeight+n*this.options.deltaHeight;if(t!=this.element.height()){this.element.height(t)}}else if(e==0){this.element.height(this.wp.elOriginalHeight)}},_updateContent:function(t){var n=this,r=n.element,i=this.options.triggerOn+n._getWidgetState().query,s=r.html(),o=s.indexOf(i),u=null;s=e.trim(s);if(e.browser.mozilla){u=s.replace(i,'<button pid="'+t[n.options.identifierProperty]+'" contentEditable="false"><span contenteditable="true">'+t[n.options.valueProperty]+"</span></button> ")}else{if(e.browser.msie){if(s.charAt(o-1)==" "){s=s.substring(0,o-1)+" "+s.substring(o,s.length+6)}}u=s.replace(i,'<button pid="'+t[n.options.identifierProperty]+'" contentEditable="false">'+t[n.options.valueProperty]+"</button> ")+(!e.browser.msie?"<br>":"")}r.html(u);n._updateHiddenInput(t[n.options.valueProperty]);r.focus()},_updateHiddenInput:function(t){var n=this.element.siblings(".x-"+this.wp.widgetBaseClass+"-hidden-input"),r=this.element.html(),i=null,s=t?this.element.text().indexOf(t)+t.length+1:0;if(e.browser.msie&&parseInt(e.browser.version,10)<=8){r=r.replace(this.wp.mailToPrefixRegEx,this.wp.emptyString).replace(this.wp.mailToSuffixRegEx,this.wp.emptyString)}i=r.replace(this.wp.spanRegEx,this.wp.emptyString).replace(this.wp.typeRegEx,this.wp.emptyString).replace(this.wp.breakLineRegEx,this.wp.emptyString).replace(this.wp.contentEditableRegEx,this.wp.emptyString).replace(this.wp.pidRegEx,this.wp.enclosurePrefix).replace(this.wp.delimeterRegEx,this.wp.enclosureDelimeter).replace(this.wp.openingTagRegEx,this.wp.emptyString).replace(this.wp.closingTagRegEx,this.wp.enclosureSuffix).replace(this.wp.nbspRegEx,this.wp.space);n.val(e("<div></div>").html(i).text());s>0&&this._setCaretPositionAfter(t,s)},_setCaretPositionAfter:function(t,n){var r=null,i=null,s=0,o=null,u=null,a=null;this.element.focus();if(window.getSelection){a=window.getSelection();r=a.getRangeAt(0);i=this.element[0].childNodes;if(i.length>0){e.each(i,function(e,n){if(n.textContent&&t==n.textContent){s=e}});try{r.setStart(i[s+1],1);r.collapse(true);a.removeAllRanges();a.addRange(r)}catch(f){if(window.console){console.error(f)}}}}},destroy:function(){this.element.siblings(".x-"+this.wp.widgetBaseClass+"-hidden-input").remove();if(this.options.autoHeight){this.element.height(this.wp.elOriginalHeight)}e.kk.paginateddropdown.prototype.destroy.call(this)}});e.extend(e.kk.quickpost.prototype.options,e.kk.paginateddropdown.prototype.options)})(jQuery);
+		</script>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+		<script type="text/javascript" src="assets/sample.json"></script>
+    	<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    	<link rel="stylesheet" type="text/css" media="screen" href="assets/paginated.dropdown.widget.css">
+    	<link rel="stylesheet" type="text/css" media="screen" href="assets/quickpost.widget.css">
 
-    <title>Jquery-quickpost-widget</title>
-  </head>
+		<style type="text/css">
+			tbody .vertical-align-top { vertical-align: top; }
+    		span.required { color: red; }
+			.borderless { border: none; }
+    		.input-form { width: 100%; }
+    		.textArea100 { width: 98%; height: 100px; }
+    		.textArea { width: 98%; height: 200px; }
+			.input-label,.input-label-checkbox { width: 200px; color: #000000; }
+			.input-label { vertical-align: top; padding: 10px 5px 5px 10px; }
+			.checkbox { margin-left: 20px; }
+			.property-value-actions { display: inline-block; }
+			.x-inline-block { display: inline-block; zoom: 1; *display: inline; _height: 30px; }
+			.x-float-right { float: right; }
+			.x-width-10px { width: 10px; }
+			.x-button { background: #DDDDDD; color: #373737; border: 1px solid #373737; cursor: pointer; }
+			.x-button:hover { background: #373737; color: #DDDDDD; border: 1px solid #DDDDDD; cursor: pointer; }
+			.width500px { width: 500px; }
+			.height60px { height: 60px; }
+    	</style>
+  	</head>
 
-  <body>
-
+	<body>
     <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/kapilkashyap/jquery-quickpost-widget">View on GitHub</a>
+	    <div id="header_wrap" class="outer">
+			<header class="inner">
+	        	<a id="forkme_banner" href="https://github.com/kapilkashyap/jquery-quickpost-widget">View on GitHub</a>
 
-          <h1 id="project_title">Jquery-quickpost-widget</h1>
-          <h2 id="project_tagline">A Facebook: Update status or Google+: What's new... like widget which allows you to select profile(s) or page(s) from suggested drop down list, highlights them while you continue entering content and provides a direct link to the selected profile(s) or page(s) after posting the content.</h2>
+	          	<h1 id="project_title">jquery-quickpost-widget</h1>
+	          	<!-- 
+	          	<h2 id="project_tagline">This jQuery widget provides you with the functionality of adding profile(s) to your post using special keys like '@'. Once added, these profile(s) would be highlighted in the text area until you post the content. Once the content is posted the added profile(s) are clickable taking them to the profile page.</h2>
+	          	 -->
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/kapilkashyap/jquery-quickpost-widget/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/kapilkashyap/jquery-quickpost-widget/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+				<section id="downloads">
+	            	<a class="zip_download_link" href="https://github.com/kapilkashyap/jquery-quickpost-widget/zipball/master">Download this project as a .zip file</a>
+	              	<a class="tar_download_link" href="https://github.com/kapilkashyap/jquery-quickpost-widget/tarball/master">Download this project as a tar.gz file</a>
+	            </section>
+	        </header>
+	    </div>
 
     <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    	<div id="main_content_wrap" class="outer">
+      		<section id="main_content" class="inner">
+        		<h1>jQuery Quickpost</h1>
+				<p>This jQuery widget provides you with the functionality of adding profile(s) to your post using special keys like '@'. Once added, these profile(s) would 
+				 be highlighted in the text area until you post the content. Once the content is posted the added profile(s) are clickable taking them to the profile page.
+				 This widget acts bit similar to Facebook's - What's on your mind? or Google +'s - Share what's new... widgets.</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<!--
+				<h3 id="usage">Plugin Usage<div class="x-inline-block x-width-10px">&nbsp;</div><span style="font-size: 14px;">(<a href="#demo" onclick="javascript:void(0);">Demo</a>)</span></h3>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<div class="highlight">
+<pre><span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">filterJSON</span><span class="p">({</span> <span class="nx">json</span> <span class="nx">object</span> <span class="p">},</span> <span class="p">{</span>
+	<span class="nx">property</span><span class="o">:</span> <span class="p">[</span><span class="s2">"prop1"</span><span class="p">,</span> <span class="s2">"prop2"</span><span class="p">,</span> <span class="p">...</span> <span class="nx">n</span><span class="p">],</span> <span class="nx">//</span> <span class="nx required">mandatory</span>
+	<span class="nx">wrapper</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+	<span class="nx">value</span><span class="o">:</span> <span class="s2">"user one"</span><span class="p">,</span>
+	<span class="nx">checkContains</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+	<span class="nx">startsWith</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+	<span class="nx">matchCase</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+	<span class="nx">avoidDuplicates</span><span class="o">:</span> <span class="kc">true</span>
+<span class="p">});</span>
+</pre>
+</div>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+				<h3 id="docs">Plugin Properties Explained<div class="x-inline-block x-width-10px">&nbsp;</div><span style="font-size: 14px;">(<a href="#demo" onclick="javascript:void(0);">Demo</a>)</span></h3>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+				<p>Before digging into each property of the plugin lets describe our sample JSON.</p>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<div class="highlight"><pre><span class="p">{</span>
+    <span class="p">{</span>
+        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">12345</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User One"</span><span class="p">,</span>
+        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.one@email.com"</span>
+    <span class="p">},{</span>
+        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">23456</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User Two"</span><span class="p">,</span>
+        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.two@email.com"</span>
+    <span class="p">},{</span>
+        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">34567</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User Three"</span><span class="p">,</span>
+        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.three@email.com"</span>
+    <span class="p">}</span>
+    <span class="p">.</span>
+    <span class="p">.</span>
+    <span class="p">.</span>
+<span class="p">}</span>
+</pre></div>
+-->
+<!--
+<ul>
+<li><p>property (mandatory, default is null): This options takes an array of the property or properties that you need to filter the JSON with. For the above sample JSON we can have three properties
+id, name and email. So you can have this value set as ["name"] or ["name", "email"]</p></li>
+<li><p>wrapper (optional, default is false): If set to true, it will return an array of the parent object of the matched property else will return an array of value itself.
+For instance if we are filtering the above sample JSON with 'name' property and wrapper is set to true, then an array of all the Objects which 
+have the 'name'property will be returned.
+If the wrapper is set to false, then an array of only the values of the property will be returned. For the above sample JSON
+["User One", "User Two", "User Three"] would be returned.</p></li>
+<li><p>value (optional): An optional value passed in as a string (for a single value match) or as an array to check the matched property value against multiple values.</p></li>
+<li><p>checkContains (optional, default is false): Setting this option to true will check if the matched property's value contains the passed in value. However, passing a value becomes mandatory for this to work.
+This option will be considered only if it is true and startsWith is not set to true.</p></li>
+<li><p>startsWith (optional, default is false): Setting this option to true will check if the matched property's value starts with the passed in value. However, passing a value becomes mandatory for this to work.
+This options takes precedence over checkContains if it is set to true.</p></li>
+<li><p>matchCase (optional, default is false): If set to true will perform case-sensitive search of values.</p></li>
+<li><p>avoidDuplicates (optional, default is false): If set to true will avoid duplicate objects.</p></li>
+</ul>
+-->
+<!--
+<br/>
+				<table>
+					<tr>
+						<th>Property</th>
+						<th>Type</th>
+						<th>Default</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>property&nbsp;<span class="required">*</span></td>
+						<td>array</td>
+						<td>null</td>
+						<td>This options takes a property or an array of properties that you need to filter the JSON with. For the above sample JSON we have three properties, namely:
+							id, name and email. So you can set this value as ["name"] or ["name", "email"]</td>
+					</tr>
+					<tr>
+						<td>wrapper</td>
+						<td>boolean</td>
+						<td>false</td>
+						<td>If set to true, will return an array of objects whose property has matched, otherwise will return an array of value itself.
+							For instance if we are filtering the above sample JSON with 'name' and wrapper is set to true, then an array of all the objects which 
+							have the 'name' property will be returned. If the wrapper is set to false, then an array of only the values of the property will be returned. For the above sample JSON
+							["User One", "User Two", "User Three"] would be returned.</td>
+					</tr>
+					<tr>
+						<td>value</td>
+						<td>string/array</td>
+						<td>[V1...Vn]</td>
+						<td>An optional value passed in as a string (for a single value match) or as an array to check the matched property value against multiple values.</td>
+					</tr>
+					<tr>
+						<td>checkContains</td>
+						<td>boolean</td>
+						<td>false</td>
+						<td>Setting this option to true will check if the matched property's value contains the passed in value. However, passing a value becomes mandatory for this to work.
+							This option will be considered only if it is true and startsWith is not set to true.</td>
+					</tr>
+					<tr>
+						<td>startsWith</td>
+						<td>boolean</td>
+						<td>false</td>
+						<td>Setting this option to true will check if the matched property's value starts with the passed in value. However, passing a value becomes mandatory for this to work.
+							This options takes precedence over checkContains if it is set to true.</td>
+					</tr>
+					<tr>
+						<td>matchCase</td>
+						<td>boolean</td>
+						<td>false</td>
+						<td>If set to true will perform case-sensitive search of values.</td>
+					</tr>
+					<tr>
+						<td>avoidDuplicates</td>
+						<td>boolean</td>
+						<td>false</td>
+						<td>If set to true will avoid duplicate objects.</td>
+					</tr>
+				</table>
+<br/>
+				<div id="demo">
+					<div class="x-float-right x-inline-block"><a href="#docs" onclick="javascript:void(0);">Docs</a></div>
+					<div class="x-float-right x-inline-block x-width-10px">&nbsp;</div>
+					<div class="x-float-right x-inline-block"><a href="#usage" onclick="javascript:void(0);">Usage</a></div>
+				</div>
+-->
+				<div>Enter text in the below input area. Use '@' followed by an alphabet to trigger suggestions.</div>
+				<div>Use the below properties to change configuration of Quickpost widget applied to input area.</div>
+				<table class="input-form">
+					<tr>
+						<th>Demo</th>
+					</tr>
+					<tr>
+						<td class="vertical-align-top">
+							<div>
+								<div id="x-demo-1" class="x-quickpost height60px" placeholder="What's up?" contentEditable="true" dir="LTR"></div>
+							</div>
+						</td>
+					</tr>
+				</table>
+<br/>
+				<div class="paddingT20px">
+					<table class="input-form">
+						<tr>
+							<th>Properties</th>
+							<th>Values</th>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">url<span class="mandatory">*</span>:</td>
+							<td class="input-field text inputBorder">
+								<input id="url" type="text" value="assets/cricketers.json" readonly="readonly"/>
+								<span class="input-label">Default: null (Current value returns json object with id, name and email property)</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">itemTemplate<span class="mandatory">*</span>:</td>
+							<td class="input-field text inputBorder">
+								<textarea id="item-template" name="template" class="textArea100"><div title="{@:id}"><div>{@:name}</div><div>{@:email}</div></div></textarea>
+								<span class="input-label">Default: null</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">valueProperty<span class="mandatory">*</span>:</td>
+							<td class="input-field text inputBorder">
+								<select id="value-property">
+									<option value="name">name</option>
+									<option value="email">email</option>
+									<option value="id">id</option>
+								</select>
+								<span class="input-label">Default: null (one of the properties in the returned json object.)</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">triggerOn:</td>
+							<td class="input-field text inputBorder">
+								<input id="triggerOn" type="text" value="@" />
+								<span class="input-label">Default: @</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">identifierProperty:</td>
+							<td class="input-field text inputBorder">
+								<select id="identifierProperty">
+									<option value="id">id</option>
+									<option value="name">name</option>
+									<option value="email">email</option>
+								</select>
+								<span class="input-label">Default: id (one of the properties in the returned json object to uniquely define the object.)</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">autoHeight:</td>
+							<td class="input-field text inputBorder">
+								<select id="autoHeight">
+									<option value="true">True</option>
+									<option value="false">False</option>
+								</select>
+								<span class="input-label">Default: true</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">increaseHeightAfter:</td>
+							<td class="input-field text inputBorder">
+								<input id="increaseHeightAfter" type="text" value="75" />
+								<span class="input-label">Default: 75 (characters)</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">deltaHeight:</td>
+							<td class="input-field text inputBorder">
+								<input id="deltaHeight" type="text" value="20" />
+								<span class="input-label">Default: 20 (pixels)</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">itemsPerPage:</td>
+							<td class="input-field text inputBorder">
+								<select id="items-per-page">
+									<option value="5">5</option>
+									<option value="10">10</option>
+									<option value="15">15</option>
+								</select>
+								<span class="input-label">Default: 10</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">dropdownWidth:</td>
+							<td class="input-field text inputBorder">
+								<input id="dropdown-width" type="text" name="dropdownWidth" value="" />
+								<span class="input-label">Enter numeric value. Default: null</span>
+							</td>
+						</tr>
+						<!--
+						<tr class="input-row">
+							<td class="input-label text inputBorder">persistState:</td>
+							<td class="input-field text inputBorder">
+								<select id="persist-state">
+									<option value="true">True</option>
+									<option value="false" selected="selected">False</option>
+								</select>
+								<span class="input-label">Default: false</span>
+							</td>
+						</tr>
+						-->
+						<tr class="input-row">
+							<td class="input-label text inputBorder">closeBtnRequired:</td>
+							<td class="input-field text inputBorder">
+								<select id="close-btn-required">
+									<option value="true">True</option>
+									<option value="false">False</option>
+								</select>
+								<span class="input-label">Default: true</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">footerRequired:</td>
+							<td class="input-field text inputBorder">
+								<select id="footer-required">
+									<option value="true">True</option>
+									<option value="false">False</option>
+								</select>
+								<span class="input-label">Default: true</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">keyNavigation.up-down:</td>
+							<td class="input-field text inputBorder">
+								<select id="up-down">
+									<option value="true">True</option>
+									<option value="false">False</option>
+								</select>
+								<span class="input-label">Default: true</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">keyNavigation.next-prev:</td>
+							<td class="input-field text inputBorder">
+								<select id="next-prev">
+									<option value="true">True</option>
+									<option value="false">False</option>
+								</select>
+								<span class="input-label">Default: true</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">customEventPrefix:</td>
+							<td class="input-field text inputBorder">
+								<input id="custom-event-prefix" type="text" name="customEventPrefix" value="" />
+								<span class="input-label">Default: 'quickpost'</span>
+							</td>
+						</tr>
+						<tr class="input-row">
+							<td class="input-label text inputBorder">filterJSON:</td>
+							<td class="input-field text inputBorder">
+								<textarea id="filterJSON" name="filterJSON" class="textArea100">{"wrapper": true, "checkContains": false, "startsWith": true, "matchCase": false, "avoidDuplicates": false}</textarea>
+								<span class="input-label">Default: null</span>
+							</td>
+						</tr>
+						<!--
+						<tr class="input-row">
+							<td class="input-label text inputBorder">cache:</td>
+							<td class="input-field text inputBorder">
+								<select id="cache">
+									<option value="false">False</option>
+									<option value="true">True</option>
+								</select>
+								<span class="input-label">Default: false</span>
+							</td>
+						</tr>
+						-->
+						<tr>
+							<td colspan="2" class="borderless">
+								<button id="btn-apply" name="Apply" class="x-button">Apply Changes</button>
+							</td>
+						</tr>
+					</table>
+				</div>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+				<h3>Licence</h3>
+				<p>Copyright (c) 2012 Kapil Kashyap. Dual licensed under MIT License and GPL License.</p>
+      		</section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Jquery-quickpost-widget maintained by <a href="https://github.com/kapilkashyap">kapilkashyap</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+      	<footer class="inner">
+        	<p class="copyright">jquery-quickpost-widget maintained by <a href="https://github.com/kapilkashyap">kapilkashyap</a></p>
+        	<p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      	</footer>
     </div>
+  	</body>
 
-    
+	<script>
+		var $ = jQuery.noConflict();
 
-  </body>
+		$( document ).ready(function() {
+			$( "#x-demo-1" ).quickpost({
+				url: "assets/cricketers.json",
+				valueProperty: "name",
+				itemTemplate: "<div title=\"{@:email}\"><div>{@:name}</div></div>",
+				filterJSON: {startsWith: true}
+			}).bind( "quickpostitemselected", function( event, data ) {
+				if(window.console) {
+					console.log("callback - quickpostitemselected");
+					console.log(event);
+					console.log(data);
+				}
+		    });
+		});
+
+		$( "#btn-apply" ).click(function( event ) {
+			var autoHeight = $( "#autoHeight" ).val(),
+				increaseHeightAfter = $( "#increaseHeightAfter" ).val(),
+				deltaHeight = $( "#deltaHeight" ).val(),
+				dropdownWidth = $( "#dropdown-width" ).val(),
+				//persistState = $( "#persist-state" ).val(),
+				closeBtnRequired = $( "#close-btn-required" ).val(),
+				footerRequired = $( "#footer-required" ).val(),
+				upDown = $( "#up-down" ).val(),
+				nextPrev = $( "#next-prev" ).val(),
+				cep = $( "#custom-event-prefix" ).val(),
+				//cache = $( "#cache" ).val(),
+				filterJSONConfig = $( "#filterJSON" ).val();
+
+			$( "#x-demo-1" ).quickpost( "destroy" );
+			
+			$( "#x-demo-1" ).quickpost({
+				url: $( "#url" ).val(),
+				itemTemplate: $( "#item-template" ).val(),
+				valueProperty: $( "#value-property" ).val(),
+				triggerOn: $( "#triggerOn" ).val(),
+				identifierProperty: $( "#identifierProperty" ).val(),
+				autoHeight: autoHeight == "true" ? true : false,
+				increaseHeightAfter: increaseHeightAfter != "" && parseInt(increaseHeightAfter, 10) ? parseInt(increaseHeightAfter, 10) : null,
+				deltaHeight: deltaHeight != "" && parseInt(deltaHeight, 10) ? parseInt(deltaHeight, 10) : 20,
+				itemsPerPage: $( "#items-per-page" ).val(),
+				dropdownWidth: dropdownWidth != "" && parseInt(dropdownWidth, 10) ? parseInt(dropdownWidth, 10) : null,
+				//persistState: persistState == "true" ? true : false,
+				closeBtnRequired: closeBtnRequired == "true" ? true : false,
+				footerRequired: footerRequired == "true" ? true : false,
+				keyNavigation: {
+					up_down: upDown == "true" ? true : false,
+					next_prev: nextPrev == "true" ? true : false
+				},
+				filterJSON: filterJSONConfig.length > 0 ? $.parseJSON(filterJSONConfig) : false,
+				customEventPrefix: cep == "" ? null : cep
+				//cache: cache == "true" ? true : false
+			}).bind( (cep != "" ? cep : $.kk.quickpost.prototype.widgetEventPrefix) + "itemselected", function( event, data ) {
+				if(window.console) {
+					console.log("callback - " + event.type);
+					console.log(event);
+					console.log(data);
+				}
+		    });
+			$( "#x-demo-1" ).css("height", null).html( "" ).keydown();
+		});
+	</script>
+	<script type="text/javascript">
+  		var _gaq = _gaq || [];
+  		_gaq.push(['_setAccount', 'UA-39875161-1']);
+  		_gaq.push(['_trackPageview']);
+
+  		(function() {
+    		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  		})();
+	</script>
 </html>
