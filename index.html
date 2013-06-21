@@ -36,6 +36,7 @@
 			.x-button:hover { background: #373737; color: #DDDDDD; border: 1px solid #DDDDDD; cursor: pointer; }
 			.width500px { width: 500px; }
 			.height60px { height: 60px; }
+			.small-text { font-size: 10px; }
     	</style>
   	</head>
 
@@ -65,131 +66,7 @@
 				 be highlighted in the text area until you post the content. Once the content is posted the added profile(s) are clickable taking them to the profile page.
 				 This widget acts bit similar to Facebook's - What's on your mind? or Google +'s - Share what's new... widgets.</p>
 
-<!--
-				<h3 id="usage">Plugin Usage<div class="x-inline-block x-width-10px">&nbsp;</div><span style="font-size: 14px;">(<a href="#demo" onclick="javascript:void(0);">Demo</a>)</span></h3>
-
-<div class="highlight">
-<pre><span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">filterJSON</span><span class="p">({</span> <span class="nx">json</span> <span class="nx">object</span> <span class="p">},</span> <span class="p">{</span>
-	<span class="nx">property</span><span class="o">:</span> <span class="p">[</span><span class="s2">"prop1"</span><span class="p">,</span> <span class="s2">"prop2"</span><span class="p">,</span> <span class="p">...</span> <span class="nx">n</span><span class="p">],</span> <span class="nx">//</span> <span class="nx required">mandatory</span>
-	<span class="nx">wrapper</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
-	<span class="nx">value</span><span class="o">:</span> <span class="s2">"user one"</span><span class="p">,</span>
-	<span class="nx">checkContains</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
-	<span class="nx">startsWith</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
-	<span class="nx">matchCase</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
-	<span class="nx">avoidDuplicates</span><span class="o">:</span> <span class="kc">true</span>
-<span class="p">});</span>
-</pre>
-</div>
-
-				<h3 id="docs">Plugin Properties Explained<div class="x-inline-block x-width-10px">&nbsp;</div><span style="font-size: 14px;">(<a href="#demo" onclick="javascript:void(0);">Demo</a>)</span></h3>
-
-				<p>Before digging into each property of the plugin lets describe our sample JSON.</p>
-
-<div class="highlight"><pre><span class="p">{</span>
-    <span class="p">{</span>
-        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">12345</span><span class="p">,</span>
-        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User One"</span><span class="p">,</span>
-        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.one@email.com"</span>
-    <span class="p">},{</span>
-        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">23456</span><span class="p">,</span>
-        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User Two"</span><span class="p">,</span>
-        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.two@email.com"</span>
-    <span class="p">},{</span>
-        <span class="s2">"id"</span><span class="o">:</span> <span class="mi">34567</span><span class="p">,</span>
-        <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"User Three"</span><span class="p">,</span>
-        <span class="s2">"email"</span><span class="o">:</span> <span class="s2">"user.three@email.com"</span>
-    <span class="p">}</span>
-    <span class="p">.</span>
-    <span class="p">.</span>
-    <span class="p">.</span>
-<span class="p">}</span>
-</pre></div>
--->
-<!--
-<ul>
-<li><p>property (mandatory, default is null): This options takes an array of the property or properties that you need to filter the JSON with. For the above sample JSON we can have three properties
-id, name and email. So you can have this value set as ["name"] or ["name", "email"]</p></li>
-<li><p>wrapper (optional, default is false): If set to true, it will return an array of the parent object of the matched property else will return an array of value itself.
-For instance if we are filtering the above sample JSON with 'name' property and wrapper is set to true, then an array of all the Objects which 
-have the 'name'property will be returned.
-If the wrapper is set to false, then an array of only the values of the property will be returned. For the above sample JSON
-["User One", "User Two", "User Three"] would be returned.</p></li>
-<li><p>value (optional): An optional value passed in as a string (for a single value match) or as an array to check the matched property value against multiple values.</p></li>
-<li><p>checkContains (optional, default is false): Setting this option to true will check if the matched property's value contains the passed in value. However, passing a value becomes mandatory for this to work.
-This option will be considered only if it is true and startsWith is not set to true.</p></li>
-<li><p>startsWith (optional, default is false): Setting this option to true will check if the matched property's value starts with the passed in value. However, passing a value becomes mandatory for this to work.
-This options takes precedence over checkContains if it is set to true.</p></li>
-<li><p>matchCase (optional, default is false): If set to true will perform case-sensitive search of values.</p></li>
-<li><p>avoidDuplicates (optional, default is false): If set to true will avoid duplicate objects.</p></li>
-</ul>
--->
-<!--
-<br/>
-				<table>
-					<tr>
-						<th>Property</th>
-						<th>Type</th>
-						<th>Default</th>
-						<th>Description</th>
-					</tr>
-					<tr>
-						<td>property&nbsp;<span class="required">*</span></td>
-						<td>array</td>
-						<td>null</td>
-						<td>This options takes a property or an array of properties that you need to filter the JSON with. For the above sample JSON we have three properties, namely:
-							id, name and email. So you can set this value as ["name"] or ["name", "email"]</td>
-					</tr>
-					<tr>
-						<td>wrapper</td>
-						<td>boolean</td>
-						<td>false</td>
-						<td>If set to true, will return an array of objects whose property has matched, otherwise will return an array of value itself.
-							For instance if we are filtering the above sample JSON with 'name' and wrapper is set to true, then an array of all the objects which 
-							have the 'name' property will be returned. If the wrapper is set to false, then an array of only the values of the property will be returned. For the above sample JSON
-							["User One", "User Two", "User Three"] would be returned.</td>
-					</tr>
-					<tr>
-						<td>value</td>
-						<td>string/array</td>
-						<td>[V1...Vn]</td>
-						<td>An optional value passed in as a string (for a single value match) or as an array to check the matched property value against multiple values.</td>
-					</tr>
-					<tr>
-						<td>checkContains</td>
-						<td>boolean</td>
-						<td>false</td>
-						<td>Setting this option to true will check if the matched property's value contains the passed in value. However, passing a value becomes mandatory for this to work.
-							This option will be considered only if it is true and startsWith is not set to true.</td>
-					</tr>
-					<tr>
-						<td>startsWith</td>
-						<td>boolean</td>
-						<td>false</td>
-						<td>Setting this option to true will check if the matched property's value starts with the passed in value. However, passing a value becomes mandatory for this to work.
-							This options takes precedence over checkContains if it is set to true.</td>
-					</tr>
-					<tr>
-						<td>matchCase</td>
-						<td>boolean</td>
-						<td>false</td>
-						<td>If set to true will perform case-sensitive search of values.</td>
-					</tr>
-					<tr>
-						<td>avoidDuplicates</td>
-						<td>boolean</td>
-						<td>false</td>
-						<td>If set to true will avoid duplicate objects.</td>
-					</tr>
-				</table>
-<br/>
-				<div id="demo">
-					<div class="x-float-right x-inline-block"><a href="#docs" onclick="javascript:void(0);">Docs</a></div>
-					<div class="x-float-right x-inline-block x-width-10px">&nbsp;</div>
-					<div class="x-float-right x-inline-block"><a href="#usage" onclick="javascript:void(0);">Usage</a></div>
-				</div>
--->
 				<div>Enter text in the below input area. Use '@' followed by an alphabet to trigger suggestions.</div>
-				<div>Use the below properties to change configuration of Quickpost widget applied to input area.</div>
 				<table class="input-form">
 					<tr>
 						<th>Demo</th>
@@ -199,6 +76,7 @@ This options takes precedence over checkContains if it is set to true.</p></li>
 							<div>
 								<div id="x-demo-1" class="x-quickpost height60px" placeholder="What's up?" contentEditable="true" dir="LTR"></div>
 							</div>
+							<div class="small-text"># Use the below properties to change configuration of Quickpost widget applied to input area.</div>
 						</td>
 					</tr>
 				</table>
